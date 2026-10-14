@@ -14,7 +14,7 @@ android {
     ndkVersion = "27.2.12479018"
 
     defaultConfig {
-        applicationId = "com.deivid22srk.dk64recomp"
+        applicationId = "com.deivid22srk.dk64recomp.handheld"
         minSdk = 26
         targetSdk = 34
         versionCode = 4

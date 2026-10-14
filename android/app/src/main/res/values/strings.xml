@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DK64: Recompiled</string>
+    <string name="app_name">DK64 Handheld</string>
 
     <!-- Diagnóstico (tela de logs) -->
     <string name="diagnostics_title">Logs e diagnóstico</string>
