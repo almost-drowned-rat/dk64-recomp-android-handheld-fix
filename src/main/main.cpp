@@ -351,13 +351,22 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
         throw std::runtime_error("Error using SDL audio converter");
     }
 
-    uint64_t cur_queued_microseconds = uint64_t(SDL_GetQueuedAudioSize(audio_device)) / bytes_per_frame * 1000000 / sample_rate;
+    // The queue holds output frames, so convert with the output sample rate. Using the input rate here overestimated
+    // the queued time by output_sample_rate / sample_rate (2.2x for DK64's 22050 Hz), so samples were skipped
+    // (audible pitch jumps) already at ~46 ms instead of 100 ms, after which the queue ran dry (crackling).
+    uint64_t cur_queued_microseconds = uint64_t(SDL_GetQueuedAudioSize(audio_device)) / bytes_per_frame * 1000000 / output_sample_rate;
     uint32_t num_bytes_to_queue = audio_convert.len_cvt - output_channels * discarded_output_frames * sizeof(swap_buffer[0]);
     float* samples_to_queue = swap_buffer.data() + output_channels * discarded_output_frames / 2;
 
     // Prevent audio latency from building up by skipping samples in incoming audio when too many samples are already queued.
     // Skip samples based on how many microseconds of samples are queued already.
+#ifdef __ANDROID__
+    // Handheld-Fork: with the larger margin in get_frames_remaining the queue peaks slightly above 100 ms;
+    // only skip from 200 ms on, so those peaks don't cause audible pitch jumps.
+    uint32_t skip_factor = cur_queued_microseconds / 200000;
+#else
     uint32_t skip_factor = cur_queued_microseconds / 100000;
+#endif
     if (skip_factor != 0) {
         uint32_t skip_ratio = 1 << skip_factor;
         num_bytes_to_queue /= skip_ratio;
@@ -373,7 +382,13 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
 }
 
 size_t get_frames_remaining() {
+#ifdef __ANDROID__
+    // Handheld-Fork: the game delivers audio in irregular bursts on Android; with a one-VI margin the queue
+    // regularly ran dry between chunks (crackling). Keep three VIs of margin instead.
+    constexpr float buffer_offset_frames = 3.0f;
+#else
     constexpr float buffer_offset_frames = 1.0f;
+#endif
     // Get the number of remaining buffered audio bytes.
     uint64_t buffered_byte_count = SDL_GetQueuedAudioSize(audio_device);
 
