@@ -15,9 +15,10 @@ What this fork changes (details in [CHANGELOG.md](CHANGELOG.md)):
 - Fixed audio crackling and pitch jumps
 - Fixed a frozen picture after overlays and the missing restart after loading a ROM
 
-> ⚠️ **No game assets and no prebuilt APK.** The APK contains code recompiled from the ROM, so it is not
-> distributed here. Build it yourself with your own legally obtained ROM of **Donkey Kong 64 (USA, NTSC-U 1.0)**,
-> sha1 `cf806ff2603640a748fca5026ded28802f1f4a50` — see [Building](#building) below.
+> ⚠️ **No game assets.** The APK on the [Releases](../../releases) page contains only this project's code (like the
+> upstream and original port releases): you need your own legally obtained ROM of **Donkey Kong 64 (USA, NTSC-U 1.0)**,
+> sha1 `cf806ff2603640a748fca5026ded28802f1f4a50`, which the app asks for on the first start ("Load ROM").
+> To build the APK yourself see [Building](#building) below.
 
 Branch `handheld` is the fork's branch; `main` stays at the original port. For installing, the GPU driver
 menu (Turnip) and technical notes see the [original port's README](https://github.com/deivid22srk/dk64-recomp-android#readme); the Turnip

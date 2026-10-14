@@ -4,7 +4,7 @@ Fork of [deivid22srk/dk64-recomp-android](https://github.com/deivid22srk/dk64-re
 for Android handhelds with a built-in controller. Tested on the AYN Odin 2 Portal
 (1920×1080, Android 13).
 
-## handheld-1 — 2026-10-14
+## 0.1 — 2026-10-14
 
 Based on deivid22srk/dk64-recomp-android `e3f76fe` (2026-09-05).
 
