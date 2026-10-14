@@ -168,6 +168,7 @@ public class MainActivity extends SDLActivity {
             dk64SurfaceCallback = new SurfaceHolder.Callback() {
                 @Override public void surfaceCreated(SurfaceHolder holder) {
                     Log.i(TAG, "DK64 SurfaceHolder: surfaceCreated");
+                    dk64SurfaceAlive = true;
                     try { nativeSurfaceState(1); } catch (UnsatisfiedLinkError e) {
                         Log.e(TAG, "nativeSurfaceState(1) indisponível: " + e.getMessage());
                     }
@@ -198,6 +199,7 @@ public class MainActivity extends SDLActivity {
                     // que a PresentQueue force a recriação mesmo se o gate
                     // já tiver sido liberado por uma flutuação de foco.
                     Log.i(TAG, "DK64 SurfaceHolder: surfaceDestroyed");
+                    dk64SurfaceAlive = false;
                     try { nativeSurfaceState(0); } catch (UnsatisfiedLinkError e) {
                         Log.e(TAG, "nativeSurfaceState(0) indisponível: " + e.getMessage());
                     }
@@ -423,6 +425,9 @@ public class MainActivity extends SDLActivity {
     /** Callback anexado ao SurfaceHolder da SDLSurface para observar surfaceCreated/Destroyed/Changed. */
     private SurfaceHolder.Callback dk64SurfaceCallback;
 
+    /** true zwischen surfaceCreated und surfaceDestroyed (UI-Thread). */
+    private boolean dk64SurfaceAlive = false;
+
     // ------------------------------------------------------------------
     // VOLLBILD (Handheld-Fork) — wie im Wind-Waker-Fork (WwhdActivity).
     //
@@ -486,6 +491,19 @@ public class MainActivity extends SDLActivity {
     public void onResume() {
         super.onResume();
         fillScreen();
+        // Handheld-Fork: Pause OHNE Verlust der Surface (durchsichtiges
+        // Overlay, Dialog-Activity, onNewIntent) — dann kommt kein
+        // surfaceCreated, und das in onPause geschlossene Gate bliebe für
+        // immer zu (Bild eingefroren). Lebt die Surface noch, hier freigeben.
+        // Wurde sie zerstört (DocumentsUI, Home), bleibt es bei der Freigabe
+        // in surfaceCreated (siehe Kommentar in onWindowFocusChanged).
+        if (dk64SurfaceAlive && mSurface != null
+                && mSurface.getHolder().getSurface() != null
+                && mSurface.getHolder().getSurface().isValid()) {
+            try { nativeSetAppActive(true); } catch (UnsatisfiedLinkError e) {
+                Log.e(TAG, "nativeSetAppActive(true) indisponível: " + e.getMessage());
+            }
+        }
         DiagnosticsLogger.mark("onResume — app de volta ao primeiro plano");
     }
 
