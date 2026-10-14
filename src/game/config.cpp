@@ -49,6 +49,33 @@ static void add_general_options(recomp::config::Config &config) {
         first_person_invert_mode_options,
         dk64::CameraInvertMode::InvertY
     );
+    static EnumOptionVector gyro_invert_mode_options = {
+        {dk64::CameraInvertMode::InvertNone, "InvertNone", "None"},
+        {dk64::CameraInvertMode::InvertX, "InvertX", "Invert X"},
+        {dk64::CameraInvertMode::InvertY, "InvertY", "Invert Y"},
+        {dk64::CameraInvertMode::InvertBoth, "InvertBoth", "Invert Both"}
+    };
+    config.add_enum_option(
+        dk64::configkeys::general::gyro_invert_mode,
+        "Invert Gyro",
+        "Inverts gyro controls.",
+        gyro_invert_mode_options,
+        dk64::CameraInvertMode::InvertY
+    );
+
+    static EnumOptionVector mouse_invert_mode_options = {
+        {dk64::CameraInvertMode::InvertNone, "InvertNone", "None"},
+        {dk64::CameraInvertMode::InvertX, "InvertX", "Invert X"},
+        {dk64::CameraInvertMode::InvertY, "InvertY", "Invert Y"},
+        {dk64::CameraInvertMode::InvertBoth, "InvertBoth", "Invert Both"}
+    };
+    config.add_enum_option(
+        dk64::configkeys::general::mouse_invert_mode,
+        "Invert Mouse",
+        "Inverts Mouse controls.",
+        mouse_invert_mode_options,
+        dk64::CameraInvertMode::InvertY
+    );
     static EnumOptionVector swimming_invert_options = {
         {dk64::CameraInvertMode::InvertNone, "InvertNone", "None"},
         {dk64::CameraInvertMode::InvertX, "InvertX", "Invert X"},
@@ -110,8 +137,8 @@ static void add_general_options(recomp::config::Config &config) {
     };
     config.add_enum_option(
         dk64::configkeys::general::lightning_flashes,
-        "Lightning Flash Intensity",
-        "Changes the intensity of lightning flashes within the game.<br /><recomp-color primary>Vanilla</recomp-color>: Lightning flashes at 100% intensity<br /><recomp-color primary>Reduced</recomp-color>: Lightning flashes at 60% intensity<br /><recomp-color primary>Off</recomp-color>: Lightning flashes are completely disabled",
+        "Lightning Flash Frequency",
+        "Changes the frequency of lightning flashes within the game.<br /><recomp-color primary>Vanilla</recomp-color>: Lightning flashes at vanilla frequency<br /><recomp-color primary>Reduced</recomp-color>: Lightning flashes at 10x as less<br /><recomp-color primary>Off</recomp-color>: Lightning flashes are completely disabled",
         lightning_flash_options,
         dk64::LightningFlashMode::Reduced
     );
@@ -154,6 +181,14 @@ dk64::LightningFlashMode dk64::get_lightning_flash() {
 
 dk64::CameraInvertMode dk64::get_first_person_invert_mode() {
     return get_general_config_enum_value<dk64::CameraInvertMode>(dk64::configkeys::general::first_person_invert_mode);
+}
+
+dk64::CameraInvertMode dk64::get_gyro_invert_mode() {
+    return get_general_config_enum_value<dk64::CameraInvertMode>(dk64::configkeys::general::gyro_invert_mode);
+}
+
+dk64::CameraInvertMode dk64::get_mouse_invert_mode() {
+    return get_general_config_enum_value<dk64::CameraInvertMode>(dk64::configkeys::general::mouse_invert_mode);
 }
 
 uint32_t dk64::get_analog_cam_sensitivity() {
@@ -310,10 +345,10 @@ static void set_control_descriptions() {
     recompinput::set_game_input_description(recompinput::GameInput::C_DOWN, "Used to toggle between the different camera zoom levels, and to pull out the fairy camera while holding Z.");
     recompinput::set_game_input_description(recompinput::GameInput::C_LEFT, "Used to rotate the camera sideways. Axis inversion can be configured in the General tab. Also used to pull out your fruit weapon while holding Z.");
     recompinput::set_game_input_description(recompinput::GameInput::C_RIGHT, "Used to rotate the camera sideways. Axis inversion can be configured in the General tab). Also used to throw an orange while holding Z.");
-    recompinput::set_game_input_description(recompinput::GameInput::DPAD_UP, "Unused. Mods may use it for additional features.");
-    recompinput::set_game_input_description(recompinput::GameInput::DPAD_DOWN, "Unused. Mods may use it for additional features.");
-    recompinput::set_game_input_description(recompinput::GameInput::DPAD_LEFT, "Unused. Mods may use it for additional features.");
-    recompinput::set_game_input_description(recompinput::GameInput::DPAD_RIGHT, "Unused. Mods may use it for additional features.");
+    recompinput::set_game_input_description(recompinput::GameInput::DPAD_UP, "Used to move in Jetpac and Donkey Kong arcade games. Mods may also use it separately for additional features.");
+    recompinput::set_game_input_description(recompinput::GameInput::DPAD_DOWN, "Used to move in Jetpac and Donkey Kong arcade games. Mods may also use it separately for additional features.");
+    recompinput::set_game_input_description(recompinput::GameInput::DPAD_LEFT, "Used to move in Jetpac and Donkey Kong arcade games. Mods may also use it separately for additional features.");
+    recompinput::set_game_input_description(recompinput::GameInput::DPAD_RIGHT, "Used to move in Jetpac and Donkey Kong arcade games. Mods may also use it separately for additional features.");
 }
 
 void dk64::init_config() {

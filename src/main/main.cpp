@@ -140,7 +140,7 @@ std::unique_ptr<ultramodern::renderer::RendererContext> create_pacing_render_con
 
 #include "../../lib/rt64/src/contrib/stb/stb_image.h"
 
-const std::string version_string = "1.0.1";
+const std::string version_string = "1.0.3";
 
 template<typename... Ts>
 void exit_error(const char* str, Ts ...args) {
@@ -954,7 +954,7 @@ int main(int argc, char** argv) {
     REGISTER_FUNC(recomp_get_draw_distance);
     REGISTER_FUNC(recomp_get_story_skip);
     REGISTER_FUNC(recomp_get_camera_type);
-    REGISTER_FUNC(recomp_get_lightning_intensity);
+    REGISTER_FUNC(recomp_get_lightning_frequency);
     REGISTER_FUNC(recomp_get_cutscene_bordering);
     REGISTER_FUNC(recomp_get_mp_enabled);
     REGISTER_FUNC(recomp_get_ui_bounds);
@@ -965,6 +965,8 @@ int main(int argc, char** argv) {
     REGISTER_FUNC(recomp_get_analog_inverted_axes);
     REGISTER_FUNC(recomp_get_swimming_inverted_axes);
     REGISTER_FUNC(recomp_get_first_person_inverted_axes);
+    REGISTER_FUNC(recomp_get_gyro_inverted_axes);
+    REGISTER_FUNC(recomp_get_mouse_inverted_axes);
     recompui::register_ui_exports();
     recomputil::register_data_api_exports();
     recomptheme::set_custom_theme();
@@ -1052,6 +1054,8 @@ int main(int argc, char** argv) {
     recomp::mods::register_mod_container_type("rtz", std::vector{ texture_pack_content_type_id }, false);
 
     recomp::Configuration cfg {
+        .argc = argc,
+        .argv = argv,
         .project_version = project_version,
         .window_handle = {},
         .rsp_callbacks = rsp_callbacks,

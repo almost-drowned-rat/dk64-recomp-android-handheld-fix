@@ -293,7 +293,7 @@ endif()
 #    RecompiledFuncs/*.c, rsp/n_aspMain.cpp, RecompiledPatches/*
 # ----------------------------------------------------------------------------
 add_library(RecompiledFuncs STATIC)
-target_compile_options(RecompiledFuncs PRIVATE -fno-strict-aliasing -Wno-unused-variable -Wno-implicit-function-declaration)
+target_compile_options(RecompiledFuncs PRIVATE -fno-strict-aliasing -Wno-unused-variable -Wno-implicit-function-declaration -falign-functions=16)
 target_include_directories(RecompiledFuncs PRIVATE
     "${REPO_ROOT}/include"
     "${NMR_DIR}/ultramodern/include"
@@ -308,7 +308,7 @@ endif()
 target_sources(RecompiledFuncs PRIVATE ${FUNC_C_SOURCES} ${FUNC_CXX_SOURCES})
 
 add_library(PatchesLib STATIC)
-target_compile_options(PatchesLib PRIVATE -fno-strict-aliasing -Wno-unused-variable -Wno-implicit-function-declaration)
+target_compile_options(PatchesLib PRIVATE -fno-strict-aliasing -Wno-unused-variable -Wno-implicit-function-declaration -falign-functions=16)
 target_include_directories(PatchesLib PRIVATE
     "${REPO_ROOT}/include"
     "${NMR_DIR}/ultramodern/include"
