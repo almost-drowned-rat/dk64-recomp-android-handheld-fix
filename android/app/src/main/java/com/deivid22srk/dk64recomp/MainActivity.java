@@ -13,6 +13,9 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 
 import org.libsdl.app.SDLActivity;
@@ -128,6 +131,7 @@ public class MainActivity extends SDLActivity {
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             getWindow().setAttributes(attrs);
         }
+        fillScreen();
 
         // Registra a JavaVM na ponte de arquivos (libmain.so já carregada por
         // super.onCreate -> loadLibraries). Sem isso, o menu do jogo não
@@ -419,6 +423,52 @@ public class MainActivity extends SDLActivity {
     /** Callback anexado ao SurfaceHolder da SDLSurface para observar surfaceCreated/Destroyed/Changed. */
     private SurfaceHolder.Callback dk64SurfaceCallback;
 
+    // ------------------------------------------------------------------
+    // VOLLBILD (Handheld-Fork) — wie im Wind-Waker-Fork (WwhdActivity).
+    //
+    // Die alten SYSTEM_UI_FLAG_* (hier und in SDLs setWindowStyle) ließen auf
+    // dem AYN Odin 2 Portal unten einen schwarzen Streifen (Navigationsleiste).
+    // Ab Android 11 blenden wir die Leisten über den WindowInsetsController
+    // aus und legen das Fenster unter sie (setDecorFitsSystemWindows(false)).
+    // Wischen vom Rand zeigt sie kurz an.
+    // ------------------------------------------------------------------
+    private void fillScreen() {
+        Window w = getWindow();
+        if (w == null) {
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            w.setDecorFitsSystemWindows(false);
+            WindowInsetsController c = w.getInsetsController();
+            if (c != null) {
+                c.hide(WindowInsets.Type.systemBars());
+                c.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            }
+        } else {
+            w.getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN);
+        }
+    }
+
+    private final Runnable rehideBars = this::fillScreen;
+
+    // Leisten von anderer Stelle eingeblendet (SDLs setWindowStyle, System):
+    // nach kurzer Zeit wieder ausblenden.
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        super.onSystemUiVisibilityChange(visibility);
+        if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0 && hasWindowFocus()) {
+            View decor = getWindow().getDecorView();
+            decor.removeCallbacks(rehideBars);
+            decor.postDelayed(rehideBars, 2000);
+        }
+    }
+
     @Override
     public void onPause() {
         // ANTES do super (que sinaliza a pausa do SDL): congela a present
@@ -435,6 +485,7 @@ public class MainActivity extends SDLActivity {
     @Override
     public void onResume() {
         super.onResume();
+        fillScreen();
         DiagnosticsLogger.mark("onResume — app de volta ao primeiro plano");
     }
 
@@ -444,14 +495,7 @@ public class MainActivity extends SDLActivity {
         // nativeFocusChanged() (pausa/retoma do loop de render).
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
-            View decor = getWindow().getDecorView();
-            decor.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN);
+            fillScreen();
 
             // NÃO chamamos mais nativeSetAppActive(true) aqui: o
             // onWindowFocusChanged(true) dispara durante a micro-flutuação
