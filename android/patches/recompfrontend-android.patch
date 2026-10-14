@@ -66,10 +66,10 @@ index 6de7a94..0937ead 100644
                  });
              }
 diff --git a/recompui/src/base/ui_state.cpp b/recompui/src/base/ui_state.cpp
-index 277a421..ae5a247 100644
+index 277a421..51b8ba5 100644
 --- a/recompui/src/base/ui_state.cpp
 +++ b/recompui/src/base/ui_state.cpp
-@@ -22,6 +22,12 @@
+@@ -22,6 +22,14 @@
  #include "recompinput/recompinput.h"
  #include "recompinput/profiles.h"
  
@@ -77,12 +77,14 @@ index 277a421..ae5a247 100644
 +// Port Android: despacho dos resultados do SAF (ROM/driver escolhidos nos
 +// menus do jogo) — ver android/native/compat/file_bridge.h.
 +#include "file_bridge.h"
++// Handheld-Fork: Options-Menü per Start + Select halten.
++#include "menu_combo.h"
 +#endif
 +
  #include "librecomp/game.hpp"
  
  #include "base/ui_launcher.h"
-@@ -82,24 +88,24 @@ static bool can_focus(Rml::Element* element) {
+@@ -82,24 +90,24 @@ static bool can_focus(Rml::Element* element) {
  // Get the first descending element whose tag name matches one of tags.
  static Rml::Element* TagMatchRecursive(const Rml::StringList& tags, Rml::Element* element)
  {
@@ -121,7 +123,7 @@ index 277a421..ae5a247 100644
  }
  
  Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) {
-@@ -662,6 +668,14 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
+@@ -662,6 +670,14 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
  
      std::lock_guard lock{ ui_state_mutex };
  
@@ -136,8 +138,37 @@ index 277a421..ae5a247 100644
      SDL_Event cur_event{};
  
      bool mouse_moved = false;
+@@ -830,9 +846,15 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
+                     profile_index = recompinput::profiles::get_controller_profile_index_from_sdl_controller(controller);
+                 }
+ 
++#if defined(__ANDROID__)
++                // Handheld-Fork: am Controller öffnet nur Start + Select
++                // (gehalten) das Menü, siehe menu_combo.h. Select allein nicht.
++                (void)profile_index;
++#else
+                 if (check_menu_button_pressed(profile_index, recompinput::GameInput::TOGGLE_MENU, cur_event.cbutton.button)) {
+                     open_config = true;
+                 }
++#endif
+                 break;
+             }
+             }
+@@ -843,6 +865,12 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
+         }
+     } // end dequeue event loop
+ 
++#if defined(__ANDROID__)
++    if (androidport::menucombo::update_ui(config_was_open, ultramodern::is_game_started())) {
++        recompui::config::open();
++    }
++#endif
++
+     // Handle controller key repeats.
+     if (latest_controller_key_pressed != SDLK_UNKNOWN) {
+         clock::time_point now = clock::now();
 diff --git a/recompui/src/composites/ui_mod_menu.cpp b/recompui/src/composites/ui_mod_menu.cpp
-index 19f761c..5918e23 100644
+index 39a7abc..0b8bdb0 100644
 --- a/recompui/src/composites/ui_mod_menu.cpp
 +++ b/recompui/src/composites/ui_mod_menu.cpp
 @@ -12,6 +12,11 @@
