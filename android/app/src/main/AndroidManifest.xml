@@ -56,6 +56,15 @@
         <!-- Launcher ÚNICA: o app abre direto no SDL. Os assets são copiados no -->
         <!-- onCreate (AppSetup) e ROM/driver são escolhidos na UI do próprio jogo -->
         <!-- (menu launcher -> SAF via file_bridge). -->
+        <!-- Handheld-Fork: Neustart nach ROM-/Treiberwahl in frischem Prozess. -->
+        <activity
+            android:name=".RestartActivity"
+            android:process=":restart"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

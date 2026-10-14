@@ -1,15 +1,12 @@
 package com.deivid22srk.dk64recomp;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -631,13 +628,10 @@ public class MainActivity extends SDLActivity {
      * daqui é seguro: o super.onDestroy da SDLActivity para o SDL, e o
      * MainActivity.onDestroy mata o processo.
      *
-     * A mensagem do nativo promete "The app will now restart": para cumprir,
-     * agenda um ALARME de +1.5s com o PendingIntent da launcher ANTES de
-     * finalizar — ele dispara DEPOIS que o onDestroy matar o processo,
-     * reabrindo o app em cold start com o driver novo. Best-effort: se o
-     * agendamento falhar (OEM sem alarme, etc.), o app apenas fecha e o
-     * usuário reabre manualmente — que agora também carrega o driver
-     * corretamente (kill incondicional no onDestroy).
+     * A mensagem do nativo promete "The app will now restart": dafür startet
+     * der Handheld-Fork vor dem finish() die RestartActivity (eigener
+     * Prozess), die nach dem Ende dieses Prozesses die App neu öffnet.
+     * Schlägt das fehl, schließt die App nur und muss manuell geöffnet werden.
      *
      * O nativo já exibiu a caixa de mensagem com o resultado da ação (install/
      * remove do driver ou confirmação de ROM carregada) antes de chamar isto
@@ -656,29 +650,21 @@ public class MainActivity extends SDLActivity {
             return;
         }
 
-        // Agenda a REABERTURA automática antes de encerrar (sobrevive ao
-        // killProcess: o alarme é do sistema, não do processo).
-        try {
-            final Intent launch = activity.getPackageManager()
-                    .getLaunchIntentForPackage(activity.getPackageName());
-            final AlarmManager alarm =
-                    (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
-            if (launch != null && alarm != null) {
-                launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                final PendingIntent pi = PendingIntent.getActivity(activity, 0, launch,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-                alarm.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        SystemClock.elapsedRealtime() + 1500L, pi);
-                Log.i(TAG, "handleNativeAppRestart: reabertura automática agendada (+1.5s)");
-            } else {
-                Log.w(TAG, "handleNativeAppRestart: reabertura automática indisponível "
-                        + "(launch intent/alarm manager nulos) — reabra manualmente");
+        // Handheld-Fork: Wiederöffnung über RestartActivity (eigener Prozess),
+        // gestartet solange wir noch im Vordergrund sind. Der frühere
+        // AlarmManager-Weg wird ab Android 10 als Hintergrundstart blockiert.
+        activity.runOnUiThread(() -> {
+            try {
+                Intent restart = new Intent(activity, RestartActivity.class);
+                restart.putExtra(RestartActivity.EXTRA_OLD_PID, android.os.Process.myPid());
+                activity.startActivity(restart);
+                activity.overridePendingTransition(0, 0);
+                Log.i(TAG, "handleNativeAppRestart: RestartActivity gestartet");
+            } catch (Throwable t) {
+                Log.w(TAG, "handleNativeAppRestart: Neustart nicht möglich — "
+                        + "bitte manuell öffnen", t);
             }
-        } catch (Throwable t) {
-            Log.w(TAG, "handleNativeAppRestart: falha ao agendar reabertura — "
-                    + "reabra manualmente", t);
-        }
+        });
 
         // Garante que o callback rode na UI thread (finish() precisa).
         activity.runOnUiThread(() -> {
