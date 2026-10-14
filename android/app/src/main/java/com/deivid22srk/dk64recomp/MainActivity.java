@@ -13,7 +13,6 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import org.libsdl.app.SDLActivity;
@@ -47,9 +46,6 @@ import java.io.File;
 public class MainActivity extends SDLActivity {
 
     private static final String TAG = "DK64Recomp";
-
-    /** Overlay do gamepad virtual (estilo N64Pad2/Dolphin) sobre o SDLSurface. */
-    private VirtualPadView virtualPadView;
 
     // ------------------------------------------------------------------
     // ORIENTAÇÃO — o jogo é LANDSCAPE-ONLY.
@@ -151,25 +147,6 @@ public class MainActivity extends SDLActivity {
             nativeRestartInit();
         } catch (UnsatisfiedLinkError e) {
             Log.e(TAG, "JNI de reinício do app indisponível: " + e.getMessage());
-        }
-
-        // Gamepad virtual: overlay transparente por cima do SDLSurface.
-        // - A libmain.so já foi carregada por super.onCreate (loadLibraries),
-        //   então os métodos JNI do VirtualPadView já estão vinculáveis.
-        // - Touches que não acertam nenhum controle caem no SDLSurface
-        //   (o overlay devolve false), mantendo o touch-as-mouse dos menus.
-        // - O HUD só é desenhado quando o jogo inicia (callback nativo
-        //   VirtualPadView.onGameStarted), para não bloquear a launcher.
-        if (mLayout != null && virtualPadView == null) {
-            try {
-                virtualPadView = new VirtualPadView(this);
-                mLayout.addView(virtualPadView, new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT));
-            } catch (UnsatisfiedLinkError e) {
-                Log.e(TAG, "JNI do gamepad virtual indisponível: " + e.getMessage());
-                virtualPadView = null;
-            }
         }
 
         // SurfaceHolder.Callback para o ciclo de vida da Surface nativa.
