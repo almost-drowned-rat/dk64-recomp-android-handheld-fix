@@ -426,7 +426,8 @@ public class MainActivity extends SDLActivity {
     private boolean dk64SurfaceAlive = false;
 
     // ------------------------------------------------------------------
-    // VOLLBILD (Handheld-Fork) — wie im Wind-Waker-Fork (WwhdActivity).
+    // VOLLBILD (Handheld-Fork) — wie im Wind-Waker-Fork (WwhdActivity), dort
+    // übernommen aus GreenNaugahydes MainActivity.hideSystemBars (MPL-2.0).
     //
     // Die alten SYSTEM_UI_FLAG_* (hier und in SDLs setWindowStyle) ließen auf
     // dem AYN Odin 2 Portal unten einen schwarzen Streifen (Navigationsleiste).

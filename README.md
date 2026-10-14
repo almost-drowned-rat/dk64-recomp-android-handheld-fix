@@ -1,3 +1,30 @@
+# DK64 Handheld — Donkey Kong 64: Recompiled for Android handhelds
+
+Fork of [deivid22srk/dk64-recomp-android](https://github.com/deivid22srk/dk64-recomp-android)
+(the Android port of [Donkey Kong 64: Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled))
+for Android handhelds with a built-in controller. Tested on the **AYN Odin 2 Portal**
+(1920×1080, Android 13).
+
+What this fork changes (details in [CHANGELOG.md](CHANGELOG.md)):
+
+- Updated to upstream Donkey Kong 64: Recompiled `3b0c36d` (game version 1.0.3)
+- Own app ID `com.deivid22srk.dk64recomp.handheld` ("DK64 Handheld") — installs next to the original app
+- No touch overlay — play with the built-in controller; touch still works as a mouse in the menus
+- Options menu: hold **Start + Select** for about one second (Select alone no longer opens it)
+- Real full screen, no black strip from the navigation bar
+- Fixed audio crackling and pitch jumps
+- Fixed a frozen picture after overlays and the missing restart after loading a ROM
+
+> ⚠️ **No game assets and no prebuilt APK.** The APK contains code recompiled from the ROM, so it is not
+> distributed here. Build it yourself with your own legally obtained ROM of **Donkey Kong 64 (USA, NTSC-U 1.0)**,
+> sha1 `cf806ff2603640a748fca5026ded28802f1f4a50` — see *Local (sem CI)* below.
+
+Branch `handheld` is the fork's branch; `main` stays at the original port.
+
+The original README of the Android port follows (Portuguese).
+
+---
+
 # DK64: Recompiled — Port Android
 
 [![build](https://github.com/deivid22srk/dk64-recomp-android/actions/workflows/build.yml/badge.svg)](https://github.com/deivid22srk/dk64-recomp-android/actions/workflows/build.yml)
@@ -39,36 +66,7 @@ Cada push gera um APK automaticamente no GitHub Actions (workflow `build.yml`):
 - **GPU com Vulkan 1.1+**
 - Gamepad Bluetooth/USB recomendado para jogar; touch navega os menus como mouse
 - O mod store *online* está desativado no Android v1 (mods locais `.nrm`/`.rtz` funcionam:
-  coloque-os em `Android/data/com.deivid22srk.dk64recomp/files/mods/`)
-
-## Gamepad virtual (touch)
-
-Para jogar **sem controle físico**, o port inclui um gamepad virtual desenhado
-sobre o jogo (`VirtualPadView`), no mesmo estilo visual do projeto
-[N64Pad2](https://github.com/deivid22srk/N64Pad2) (desenho 100% em `Canvas`,
-realce verde no toque, vibração leve, multi-touch real) com o HUD posicionado
-no estilo do **Dolphin**, em posições confortáveis para os polegares:
-
-| Região | Controles |
-|---|---|
-| Topo | `L` (esq) · `Z` (centro) · `R` (dir) |
-| Esquerda | Analógico único com setas de 8 direções e zona morta |
-| Base | D-pad em cruz · `START` vermelho · botão `☰` (abre o menu do port) |
-| Direita | Losango de 4 botões **C** amarelos · `A` grande · `B` (diagonal do A, como no N64) |
-| Quina inferior direita | Mostrar/esconder o HUD (fica ativo mesmo escondido) |
-
-Comportamento:
-
-- O HUD **só aparece quando o jogo inicia** — a launcher e os menus continuam
-  usando o touch como mouse. Toques em áreas livres do HUD também passam para
-  o jogo normalmente.
-- Botões A/B/C/START/L/R/Z/D-pad são repassados ao runtime como input N64
-  (mesma máscara de botões de um controle físico), então **todos os modos de
-  jogo, menus internos do DK64 e combinações funcionam igual**.
-- `A` aceita e `B` volta nas interfaces do port (launcher/menu de configuração);
-  o analógico e o D-pad navegam; `☰` equivale ao botão Select/Back
-  (abre e fecha o menu de configurações do port em jogo).
-- Controles semi-transparentes (estilo Dolphin) para não esconder a ação.
+  coloque-os em `Android/data/com.deivid22srk.dk64recomp.handheld/files/mods/`)
 
 ## Como compilar (resumo)
 
@@ -120,6 +118,8 @@ cmake -S lib/rt64/src/tools/file_to_c -B build-filetoc -G Ninja && cmake --build
 # 2) APK
 git -C lib/rt64 apply ../../android/patches/rt64-android.patch
 git -C lib/rt64/src/contrib/plume apply ../../../../../android/patches/plume-android.patch
+git -C lib/rt64/src/contrib/zstd apply ../../../../../android/patches/zstd-android.patch
+git -C lib/N64ModernRuntime apply ../../android/patches/n64modernruntime-android.patch
 git -C lib/RecompFrontend apply ../../android/patches/recompfrontend-android.patch
 cd android && ./gradlew assembleDebug -PHOST_FILE_TO_C="$PWD/../build-filetoc/file_to_c"
 ```
@@ -175,15 +175,32 @@ probe de validação): [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md).
   customizável via libadrenotools (ver [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md))
 - Alinhamento 16KB pages; minSdk 26; arm64-v8a
 
-## Créditos e licença
+## Credits and license
 
-- Upstream: [Rainchus/Donkey-Kong-64-Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled)
-  (veja [LICENSE](LICENSE)) — baseado em [N64: Recompiled](https://github.com/Mr-Wiseguy/N64Recomp)
-  de Mr-Wiseguy
-- RT64 (DinnerHone/rt64), N64ModernRuntime e RecompFrontend (Killklli), RmlUi,
-  SDL2, dk64_decomp team — detalhes no README original ([README-UPSTREAM.md](README-UPSTREAM.md))
+This fork:
+- [deivid22srk/dk64-recomp-android](https://github.com/deivid22srk/dk64-recomp-android) — the Android port
+  this fork is based on (NDK build, SDLActivity integration, SAF file bridge, libadrenotools/Turnip support,
+  lifecycle handling)
+- [thorskin6657-sudo/dk64-recomp-android](https://github.com/thorskin6657-sudo/dk64-recomp-android) — reference
+  for the separate app identity
+- [GreenNaugahyde/ZeldaWWHDRecompAndroid](https://github.com/GreenNaugahyde/ZeldaWWHDRecompAndroid) —
+  full-screen approach (`hideSystemBars`, MPL-2.0), via the Wind Waker Odin fork
 
-*Este port é um trabalho técnico de fã, sem qualquer afiliação com a Nintendo.*
+Game and runtime:
+- [Rainchus/Donkey-Kong-64-Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled) — DK64: Recompiled
+  by Rainchus, Ballaam, Killklli, Green Bean and UmedMuzl (see [README-UPSTREAM.md](README-UPSTREAM.md))
+- [N64Recomp](https://github.com/N64Recomp/N64Recomp) by Mr-Wiseguy — static recompiler
+- [N64ModernRuntime](https://github.com/N64Recomp/N64ModernRuntime) (fork used: [Killklli](https://github.com/Killklli/N64ModernRuntime))
+- [RecompFrontend](https://github.com/Killklli/RecompFrontend) — launcher and config menus (UI design by thecozies)
+- [RT64](https://github.com/rt64/rt64) by Dario (DarioSamo) — renderer, with [plume](https://github.com/renderbag/plume)
+- [Donkey Kong 64 decompilation](https://gitlab.com/dk64_decomp/dk64) — headers and ROM tools
+- [libadrenotools](https://github.com/bylaws/libadrenotools) by bylaws — custom Vulkan drivers
+- [SDL2](https://www.libsdl.org/), [RmlUi](https://github.com/mikke89/RmlUi), [lunasvg](https://github.com/sammycage/lunasvg),
+  [zstd](https://github.com/facebook/zstd) and the other libraries listed in the submodules
+
+License: GPL-3.0, see [LICENSE](LICENSE) / [COPYING](COPYING). Source code of all changes is in this repository.
+
+*Fan project, not affiliated with Nintendo or Rare. Donkey Kong 64 is © Nintendo / Rare.*
 
 ### Trocar a ROM depois
 
