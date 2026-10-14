@@ -21,96 +21,65 @@ What this fork changes (details in [CHANGELOG.md](CHANGELOG.md)):
 
 Branch `handheld` is the fork's branch; `main` stays at the original port.
 
-The original README of the Android port follows (Portuguese).
+## About the Android port
 
----
-
-# DK64: Recompiled — Port Android
-
-[![build](https://github.com/deivid22srk/dk64-recomp-android/actions/workflows/build.yml/badge.svg)](https://github.com/deivid22srk/dk64-recomp-android/actions/workflows/build.yml)
-
-Port do [Donkey Kong 64: Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled)
-(Rainchus) para **Android nativo** via NDK, mantendo toda a stack original:
+Based on deivid22srk's port of [Donkey Kong 64: Recompiled](https://github.com/Rainchus/Donkey-Kong-64-Recompiled)
+to **native Android** via the NDK, keeping the whole original stack:
 [N64ModernRuntime](https://github.com/Killklli/N64ModernRuntime) +
 [RT64](https://github.com/rt64/rt64) (Vulkan) + RmlUi + SDL2.
 
-> ⚠️ **Este repositório não contém game assets.** Você precisa da ROM original de
-> **Donkey Kong 64 (EUA, NTSC-U 1.0)** — sha1 `cf806ff2603640a748fca5026ded28802f1f4a50`.
-> Este projeto é um port de código aberto; nenhuma ROM é distribuída aqui.
+## Installing on the device
 
-## APK pronto
+1. Install the APK (allow "Install unknown apps").
+2. Open the app — it goes straight to the **game menu**. On the first start the UI assets are extracted
+   automatically.
+3. If no ROM is loaded yet, the first menu entry is **"Load ROM"**: select the file (`.z64`, `.n64` or `.v64` —
+   byte order is converted automatically) in the Android file picker and wait for the validation. A message
+   appears and the **app restarts by itself** to finish the setup; afterwards the entry reads **"Start Game"**.
 
-Cada push gera um APK automaticamente no GitHub Actions (workflow `build.yml`):
-**Actions → build → artefato `dk64recomp-android-debug`** (`app-debug.apk`).
+   > The selected ROM is copied to the app's internal storage and checked by hash (pick once: later starts open
+   > on "Start Game" directly). The restart runs the game start in a clean process — the same principle as the
+   > "GPU Driver" menu (Vulkan is initialised once per process).
 
-## Instalação no aparelho
-
-1. Instale o `app-debug.apk` (habilite "Instalar apps desconhecidos").
-2. Abra o app — ele vai direto para o **menu do jogo** (a tela Java de setup foi
-   desativada). Na primeira execução os assets da UI são extraídos sozinhos.
-3. Se ainda não houver ROM, a primeira opção do menu é **“Load ROM”**: toque,
-   escolha o arquivo (`.z64`, `.n64` ou `.v64` — a conversão de byteswap é
-   automática) no seletor de arquivos do Android e aguarde a validação —
-   aparece um aviso e o **app reinicia sozinho** (~1,5 s) para finalizar a
-   instalação; na reabertura a opção já está como **“Start Game”**.
-
-   > A ROM escolhida é copiada para o armazenamento interno do app e validada
-   > por hash (pick-once: nas próximas aberturas o menu já abre em “Start
-   > Game”). O reinício põe o início do jogo num processo limpo — o mesmo
-   > princípio do menu “GPU Driver” (o Vulkan inicializa uma vez por
-   > processo).
-
-### Requisitos
+### Requirements
 
 - Android 8.0+ (arm64-v8a)
-- **GPU com Vulkan 1.1+**
-- Gamepad Bluetooth/USB recomendado para jogar; touch navega os menus como mouse
-- O mod store *online* está desativado no Android v1 (mods locais `.nrm`/`.rtz` funcionam:
-  coloque-os em `Android/data/com.deivid22srk.dk64recomp.handheld/files/mods/`)
+- **GPU with Vulkan 1.1+**
+- A controller (built in, Bluetooth or USB); touch works as a mouse in the menus
+- The *online* mod store is disabled on Android (local `.nrm`/`.rtz` mods work: put them in
+  `Android/data/com.deivid22srk.dk64recomp.handheld/files/mods/`)
 
-## Como compilar (resumo)
+### Changing the ROM later
 
-O build tem duas fases (ambas automatizadas no CI):
+The runtime keeps the validated ROM in its internal config and checks its hash on every start. To choose
+another ROM, clear the app's data (or just its storage) — the menu offers **"Load ROM"** again on the next start.
 
-1. **Codegen no host** — baixa a ROM de input do release `build-inputs` de um
-   **repositório privado separado** (`dk64-recomp-build-inputs`, via secret
-   `PRIVATE_REPO_TOKEN`), descomprime com o script do [decomp do DK64](https://gitlab.com/dk64_decomp/dk64),
-   compila [N64Recomp](https://github.com/N64Recomp/N64Recomp)/`RSPRecomp` e roda
-   `us.toml`, `n_aspMain.toml` e `patches.toml`; além do `file_to_c` (host).
-2. **APK via Gradle+NDK** — `android/gradlew assembleDebug` com `externalNativeBuild`
-   (CMake orquestrado em `android/app/CMakeLists.txt`).
+## Building
 
-Detalhes completos: [DESIGN.md](DESIGN.md) · README original do upstream: [README-UPSTREAM.md](README-UPSTREAM.md)
-· build desktop: [BUILDING.md](BUILDING.md).
+The build has two stages:
 
-### Repositório privado de inputs (setup único para quem compila)
+1. **Codegen on the host** — decompress the ROM with the script from the
+   [DK64 decompilation](https://gitlab.com/dk64_decomp/dk64), build
+   [N64Recomp](https://github.com/N64Recomp/N64Recomp)/`RSPRecomp` and run `us.toml`, `n_aspMain.toml` and
+   `patches.toml`; plus the host tool `file_to_c`.
+2. **APK via Gradle + NDK** — `android/gradlew assembleDebug` with `externalNativeBuild`
+   (CMake orchestrated in `android/app/CMakeLists.txt`).
 
-O zip com a ROM de build **não fica neste repo público** (nem em releases dele):
-fica em um repositório **privado** que o CI acessa via PAT. Configure tudo com o
-script pronto (requer [gh CLI](https://cli.github.com/), `zip`/`unzip` e um PAT
-classic com escopo `repo` — de preferência um token novo, não compartilhado em chats):
+Details: [DESIGN.md](DESIGN.md) · upstream README: [README-UPSTREAM.md](README-UPSTREAM.md) ·
+desktop build: [BUILDING.md](BUILDING.md).
 
-```bash
-GH_TOKEN=ghp_... ROM_ZIP=caminho/para/Donkey.Kong.64.zip \
-  ./scripts/setup-build-inputs-repo.sh --purge-public
-```
+### Local build
 
-O script: valida o sha1 da ROM (NTSC-U 1.0), cria o repo privado
-`dk64-recomp-build-inputs`, publica o release `build-inputs` com o asset
-`Donkey.Kong.64.zip`, define o secret `PRIVATE_REPO_TOKEN` neste repo e
-( com `--purge-public` ) remove qualquer release/tag `build-inputs` antiga
-deste repo público. Se você rotacionar o PAT depois, basta rodar o script
-de novo (ou `gh secret set PRIVATE_REPO_TOKEN`) para o CI continuar funcionando.
-
-### Local (sem CI)
+Requires a Linux host (WSL works) with clang, lld, ninja, cmake, python3, JDK 17 and the Android SDK with
+`platforms;android-34`, `ndk;27.2.12479018` and `cmake;3.22.1`.
 
 ```bash
-# 1) Codegen (host Linux com clang/lld/ninja + python3)
-git submodule update --init --recursive   # vcpkg não é necessário: update=none
-<baixe sua ROM e coloque em rom-work/baserom.us.z64>
+# 1) Codegen
+git submodule update --init --recursive   # vcpkg is not needed for Android
+# put your ROM at rom-work/baserom.us.z64
 (cd rom-work && python3 ../lib/dk64_decomp/tools/generate_decompressed_rom.py)
 cp rom-work/baserom.us.decompressed.z64 donkeykong64.decompressed.us.z64
-# build N64Recomp/RSPRecomp (commit 2b6f0568...) e rode:
+# build N64Recomp/RSPRecomp (commit 2b6f05688de2abc7d86da5b4a89b84c2c6acbabe) and run:
 ./N64Recomp us.toml && ./RSPRecomp n_aspMain.toml
 make -C patches CC=clang LD=ld.lld && ./N64Recomp patches.toml
 cmake -S lib/rt64/src/tools/file_to_c -B build-filetoc -G Ninja && cmake --build build-filetoc
@@ -124,56 +93,52 @@ git -C lib/RecompFrontend apply ../../android/patches/recompfrontend-android.pat
 cd android && ./gradlew assembleDebug -PHOST_FILE_TO_C="$PWD/../build-filetoc/file_to_c"
 ```
 
-## Driver Vulkan (Turnip) — opcional
+### CI with a private inputs repository (optional)
 
-Em alguns dispositivos o driver proprietário Adreno tem bugs de Vulkan (ex.:
-crash `SIGSEGV` em `vkGetRefreshCycleDurationGOOGLE` na thread `RT64 Present`,
-visto no moto g34 5G). O port integra o **libadrenotools** (como Vita3K,
-yuzu/sudachi e os ports de recompilados com RT64): você pode instalar um
-driver **Mesa Turnip** em .zip e o jogo passa a usá-lo no lugar do driver do
-sistema — **direto pelo menu do jogo**, na opção **“GPU Driver”** (embaixo de
-Exit, no launcher).
+The workflows in `.github/workflows/` (from the original port) download the build ROM from a release in a
+separate **private** repository (`dk64-recomp-build-inputs`, secret `PRIVATE_REPO_TOKEN`), so the ROM never
+lands in this public repository. `scripts/setup-build-inputs-repo.sh` sets this up (needs the
+[gh CLI](https://cli.github.com/), `zip`/`unzip` and a classic PAT with `repo` scope):
 
-1. Baixe um driver Turnip — formatos aceitos: `.zip` **adrenotools** (ex.:
-   [K11MCH1/AdrenoToolsDrivers](https://github.com/K11MCH1/AdrenoToolsDrivers),
-   `Turnip_vX.Y.Z_R*.zip`, variantes `Gmem`/`Sysmem`), `.zip` **Winlator/**
-   **WN-Turnip** (sem `meta.json` — o app autodetecta o soname) ou `.so` solto.
-   **Atenção à geração da GPU**: os zips são por geração — Adreno 6xx
-   (ex.: Adreno 619 do moto g34 5G) usa os builds **a6xx**; builds a7xx/a8xx
-   não expõem GPU neste aparelho.
-2. No menu do jogo: **GPU Driver → Install driver (.zip)...** → escolha o zip
-   (ou `.so`) no seletor do Android. O app **testa** o driver na hora (cria uma
-   `VkInstance` e enumera as GPUs, o mesmo caminho do RT64): se listar a GPU
-   (“installed and verified: Adreno (TM) 619…”), está pronto; se não listar
-   nenhuma GPU Vulkan, a instalação é **recusada** com instruções — sem isso o
-   jogo falharia com “Unable to find compatible graphics device”.
-3. **Sair do app e abrir de novo** (o driver é carregado no início do RT64;
-   o menu Exit encerra o processo, então reabrir já aplica o novo driver).
-4. Para voltar ao driver do sistema: **GPU Driver → Use system driver**
-   (botão só aparece quando há driver custom ativo).
+```bash
+GH_TOKEN=ghp_... ROM_ZIP=path/to/Donkey.Kong.64.zip \
+  ./scripts/setup-build-inputs-repo.sh --purge-public
+```
 
-Requer Adreno + arm64; Android 10+ recomendado. Detalhes da implementação
-(incl. diagnóstico do bug “Unable to find compatible graphics device” e o
-probe de validação): [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md).
+## Vulkan driver (Turnip) — optional
 
-## Notas técnicas do port
+On some devices the proprietary Adreno driver has Vulkan bugs (e.g. a `SIGSEGV` in
+`vkGetRefreshCycleDurationGOOGLE` on the `RT64 Present` thread, seen on the moto g34 5G). The port integrates
+**libadrenotools** (like Vita3K, yuzu/sudachi and other RT64 recomp ports): you can install a **Mesa Turnip**
+driver as a .zip and the game uses it instead of the system driver — **directly from the game menu**, entry
+**"GPU Driver"** (below Exit in the launcher).
 
-- `libmain.so` (SDL2 estático + runtime + RT64) carregado via `SDLActivity`
-  (`System.loadLibrary("main")` → `SDL_main`)
-- Paths do app injetados por `getArguments()` (filesDir/externalFilesDir)
-- **Toda a interação de arquivos acontece na UI do próprio jogo**: a opção
-  “Load ROM” e o menu “GPU Driver” abrem o DocumentsUI do Android via ponte
-  JNI não-bloqueante (`android/native/compat/file_bridge.cpp`); o resultado é
-  despachado por frame no `draw_hook` (patch do `ui_state.cpp`), no mesmo
-  contexto dos callbacks de menu. A tela Java de setup foi removida — o app
-  abre direto no SDL e só copia assets na 1ª execução (`AppSetup`)
-- `nativefiledialog-extended` e `curl` substituídos por *stubs* no Android
-  (diálogo de ROM = SAF via DocumentsUI; mod store offline)
-- Patches aplicados aos submódulos `rt64`/`RecompFrontend` via `git apply`
-  (`android/patches/*.patch`) — submódulos permanecem upstream
-- Vulkan via volk (`VK_NO_PROTOTYPES`): driver do sistema ou Turnip
-  customizável via libadrenotools (ver [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md))
-- Alinhamento 16KB pages; minSdk 26; arm64-v8a
+1. Download a Turnip driver — accepted formats: **adrenotools** `.zip` (e.g.
+   [K11MCH1/AdrenoToolsDrivers](https://github.com/K11MCH1/AdrenoToolsDrivers), `Turnip_vX.Y.Z_R*.zip`,
+   `Gmem`/`Sysmem` variants), **Winlator/WN-Turnip** `.zip` (without `meta.json` — the app detects the soname)
+   or a plain `.so`. **Mind the GPU generation**: Adreno 6xx needs the **a6xx** builds, a7xx/a8xx builds expose
+   no GPU there.
+2. In the game menu: **GPU Driver → Install driver (.zip)...** → pick the zip (or `.so`). The app **tests** the
+   driver right away (creates a `VkInstance` and enumerates the GPUs, the same path RT64 takes): if it lists the
+   GPU ("installed and verified: Adreno (TM) …") it is ready; if no Vulkan GPU is listed, the installation is
+   **refused** with instructions — otherwise the game would fail with "Unable to find compatible graphics device".
+3. The app restarts to load the new driver (Vulkan is initialised once per process).
+4. Back to the system driver: **GPU Driver → Use system driver** (only shown while a custom driver is active).
+
+Requires Adreno + arm64; Android 10+ recommended. Implementation details: [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md).
+
+## Technical notes
+
+- `libmain.so` (static SDL2 + runtime + RT64) is loaded via `SDLActivity` (`System.loadLibrary("main")` → `SDL_main`)
+- App paths are passed in via `getArguments()` (filesDir/externalFilesDir)
+- **All file interaction happens in the game's own UI**: "Load ROM" and "GPU Driver" open Android's DocumentsUI
+  through a non-blocking JNI bridge (`android/native/compat/file_bridge.cpp`); the result is dispatched per
+  frame in `draw_hook` (patch of `ui_state.cpp`), in the same context as the menu callbacks
+- `nativefiledialog-extended` and `curl` are replaced by *stubs* on Android (ROM dialog = SAF via DocumentsUI;
+  mod store offline)
+- Patches are applied to the submodules with `git apply` (`android/patches/*.patch`) — the submodules stay upstream
+- Vulkan via volk (`VK_NO_PROTOTYPES`): system driver or a custom Turnip via libadrenotools
+- 16 KB page alignment; minSdk 26; arm64-v8a
 
 ## Credits and license
 
@@ -201,9 +166,3 @@ Game and runtime:
 License: GPL-3.0, see [LICENSE](LICENSE) / [COPYING](COPYING). Source code of all changes is in this repository.
 
 *Fan project, not affiliated with Nintendo or Rare. Donkey Kong 64 is © Nintendo / Rare.*
-
-### Trocar a ROM depois
-
-O runtime guarda a ROM validada no config interno e a valida por hash a cada
-início. Para escolher outra ROM, limpe os dados do app (ou apenas o armazenamento
-interno) — o menu volta a oferecer **“Load ROM”** na próxima abertura.
