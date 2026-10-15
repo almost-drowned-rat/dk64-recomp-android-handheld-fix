@@ -4,6 +4,14 @@ Fork of [deivid22srk/dk64-recomp-android](https://github.com/deivid22srk/dk64-re
 for Android handhelds with a built-in controller. Tested on the AYN Odin 2 Portal
 (1920×1080, Android 13).
 
+## 0.1.1 — 2026-10-15
+
+No changes to the app itself; same code as 0.1, installs over it.
+
+### Changed
+- README and release notes: note on AI assistance — the fork's changes were made with AI assistance (Claude Code);
+  planned, tested on the AYN Odin 2 Portal and released by the repository owner. Use at your own risk.
+
 ## 0.1 — 2026-10-14
 
 Based on deivid22srk/dk64-recomp-android `e3f76fe` (2026-09-05).
