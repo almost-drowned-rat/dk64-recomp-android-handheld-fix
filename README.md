@@ -15,6 +15,13 @@ What this fork changes (details in [CHANGELOG.md](CHANGELOG.md)):
 - Fixed audio crackling and pitch jumps
 - Fixed a frozen picture after overlays and the missing restart after loading a ROM
 
+### AI assistance
+
+The changes in this fork were made with AI assistance ([Claude Code](https://claude.com/claude-code)). Planning,
+testing on the device and the decision what gets released are by the repository owner. Tested only on the
+**AYN Odin 2 Portal** — use at your own risk. This applies only to the fork's own changes, not to the code of the
+original projects.
+
 > ⚠️ **No game assets.** The APK on the [Releases](../../releases) page contains only this project's code (like the
 > upstream and original port releases): you need your own legally obtained ROM of **Donkey Kong 64 (USA, NTSC-U 1.0)**,
 > sha1 `cf806ff2603640a748fca5026ded28802f1f4a50`, which the app asks for on the first start ("Load ROM").
