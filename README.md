@@ -10,7 +10,8 @@ What this fork changes (details in [CHANGELOG.md](CHANGELOG.md)):
 - Updated to upstream Donkey Kong 64: Recompiled `3b0c36d` (game version 1.0.3)
 - Own app ID `com.deivid22srk.dk64recomp.handheld` ("DK64 Handheld") — installs next to the original app
 - No touch overlay — play with the built-in controller; touch still works as a mouse in the menus
-- Options menu: hold **Start + Select** for about one second (Select alone no longer opens it)
+- Options menu on Android's **Back** (swipe from the edge to show the system bar and tap back, or the back
+  gesture), in game; Select or Back close it
 - Real full screen, no black strip from the navigation bar
 - Fixed audio crackling and pitch jumps
 - Fixed a frozen picture after overlays and the missing restart after loading a ROM

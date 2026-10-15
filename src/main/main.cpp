@@ -20,7 +20,6 @@
 #include "android_paths.h"
 #include "custom_driver.h"
 #include "file_bridge.h"
-#include "menu_combo.h"
 #include "app_restart.h"
 #include "crash_handler.h"
 #else
@@ -1025,18 +1024,6 @@ int main(int argc, char** argv) {
         .set_rumble = recompinput::set_rumble,
         .get_connected_device_info = get_connected_device_info,
     };
-
-#ifdef __ANDROID__
-    // Handheld-Fork: Start ans Spiel unterdrücken, solange Select dazu
-    // gedrückt ist (Start + Select = Options-Menü). Siehe menu_combo.h.
-    input_callbacks.get_input = [](int controller_num, uint16_t* buttons, float* x, float* y) {
-        bool ret = recompinput::profiles::get_n64_input(controller_num, buttons, x, y);
-        if (controller_num == 0) {
-            androidport::menucombo::filter_n64_input(buttons);
-        }
-        return ret;
-    };
-#endif
 
     ultramodern::events::callbacks_t thread_callbacks{
         .vi_callback = recompinput::update_rumble,

@@ -15,8 +15,8 @@ android {
         applicationId = "com.deivid22srk.dk64recomp.handheld"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "0.1"
+        versionCode = 7
+        versionName = "0.1.1"
 
         ndk {
             // 64-bit apenas (decisão do usuário: memória e tempo de build)
