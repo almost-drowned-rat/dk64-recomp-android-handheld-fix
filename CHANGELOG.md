@@ -4,7 +4,7 @@ Fork of [deivid22srk/dk64-recomp-android](https://github.com/deivid22srk/dk64-re
 for Android handhelds with a built-in controller. Tested on the AYN Odin 2 Portal
 (1920×1080, Android 13).
 
-## 0.1.1 — unreleased
+## 0.1.1 — 2026-10-15
 
 ### Changed
 - Options menu on Android's **Back** instead of holding Start + Select: swipe from the edge to bring up the system
