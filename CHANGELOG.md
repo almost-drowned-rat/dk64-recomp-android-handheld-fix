@@ -8,8 +8,9 @@ for Android handhelds with a built-in controller. Tested on the AYN Odin 2 Porta
 
 ### Changed
 - Options menu on Android's **Back** instead of holding Start + Select: swipe from the edge to bring up the system
-  bar and tap its back button (or use the back gesture) to open or close the menu (in game). Select still closes
-  it, Escape on a keyboard works as before. Start reaches the game immediately again (no more delay).
+  bar and tap its back button (or use the back gesture) to open or close the menu (in game). Start and Select do
+  nothing for the menu any more (Select no longer closes it either); the controls inside the menu are unchanged.
+  Start reaches the game immediately again (no more delay).
 - README and release notes: note on AI assistance.
 
 ## 0.1 — 2026-10-14

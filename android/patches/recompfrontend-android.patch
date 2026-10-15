@@ -66,7 +66,7 @@ index 6de7a94..0937ead 100644
                  });
              }
 diff --git a/recompui/src/base/ui_state.cpp b/recompui/src/base/ui_state.cpp
-index 277a421..5cbfd22 100644
+index 277a421..409af75 100644
 --- a/recompui/src/base/ui_state.cpp
 +++ b/recompui/src/base/ui_state.cpp
 @@ -22,6 +22,12 @@
@@ -121,7 +121,20 @@ index 277a421..5cbfd22 100644
  }
  
  Rml::Element* get_target(Rml::ElementDocument* document, Rml::Element* element) {
-@@ -662,6 +668,14 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
+@@ -585,6 +591,12 @@ int cont_button_to_key(SDL_ControllerButtonEvent& button) {
+ 
+     for (const auto& mapping_pair : recompui::menu_action_mapping::rml_key_to_action) {
+         const auto& mapping = mapping_pair.second;
++#if defined(__ANDROID__)
++        // Handheld-Fork: Select (Toggle Menu) macht im Menü nichts; geöffnet und geschlossen wird es per Zurück.
++        if (mapping.input == recompinput::GameInput::TOGGLE_MENU) {
++            continue;
++        }
++#endif
+         if (check_menu_button_pressed(player1_profile, mapping.input, button.button)) {
+             return mapping.sdl;
+         }
+@@ -662,6 +674,14 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
  
      std::lock_guard lock{ ui_state_mutex };
  
@@ -136,7 +149,7 @@ index 277a421..5cbfd22 100644
      SDL_Event cur_event{};
  
      bool mouse_moved = false;
-@@ -808,6 +822,23 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
+@@ -808,6 +828,23 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
              }
          }
  
@@ -160,7 +173,7 @@ index 277a421..5cbfd22 100644
          // If the config menu isn't open and the game has been started and either the escape key or select button are pressed, open the config menu.
          if (!config_was_open && ultramodern::is_game_started()) {
              bool open_config = false;
-@@ -830,9 +861,15 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
+@@ -830,9 +867,15 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
                      profile_index = recompinput::profiles::get_controller_profile_index_from_sdl_controller(controller);
                  }
  
@@ -206,6 +219,23 @@ index 39a7abc..0b8bdb0 100644
  #elif defined(__linux__)
      std::string command = "xdg-open \"" + mods_directory.string() + "\" &";
      std::system(command.c_str());
+diff --git a/recompui/src/elements/ui_modal.cpp b/recompui/src/elements/ui_modal.cpp
+index b057f46..4d11577 100644
+--- a/recompui/src/elements/ui_modal.cpp
++++ b/recompui/src/elements/ui_modal.cpp
+@@ -105,9 +105,12 @@ Modal::Modal(
+     body->set_flex_direction(FlexDirection::Row);
+     body->set_width(100.0f, Unit::Percent);
+ 
++#if !defined(__ANDROID__)
++    // Handheld-Fork: auf Android schließt Select nichts (Menü per Zurück), daher auch kein "Close: Select" unten.
+     set_menu_action_callback(MenuAction::Toggle, [this]() {
+         this->close();
+     }, "Close");
++#endif
+ }
+ 
+ Modal::~Modal() {
 diff --git a/recompui/src/util/file.cpp b/recompui/src/util/file.cpp
 index 7ee84ed..a101344 100644
 --- a/recompui/src/util/file.cpp
