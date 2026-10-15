@@ -33,31 +33,6 @@ menu (Turnip) and technical notes see the [original port's README](https://githu
 integration is described in [docs/DRIVER-VULKAN.md](docs/DRIVER-VULKAN.md), the build architecture in
 [DESIGN.md](DESIGN.md).
 
-## Building
-
-Requires a Linux host (WSL works) with clang, lld, ninja, cmake, python3, JDK 17 and the Android SDK with
-`platforms;android-34`, `ndk;27.2.12479018` and `cmake;3.22.1`.
-
-```bash
-# 1) Codegen
-git submodule update --init --recursive   # vcpkg is not needed for Android
-# put your ROM at rom-work/baserom.us.z64
-(cd rom-work && python3 ../lib/dk64_decomp/tools/generate_decompressed_rom.py)
-cp rom-work/baserom.us.decompressed.z64 donkeykong64.decompressed.us.z64
-# build N64Recomp/RSPRecomp (commit 2b6f05688de2abc7d86da5b4a89b84c2c6acbabe) and run:
-./N64Recomp us.toml && ./RSPRecomp n_aspMain.toml
-make -C patches CC=clang LD=ld.lld && ./N64Recomp patches.toml
-cmake -S lib/rt64/src/tools/file_to_c -B build-filetoc -G Ninja && cmake --build build-filetoc
-
-# 2) APK
-git -C lib/rt64 apply ../../android/patches/rt64-android.patch
-git -C lib/rt64/src/contrib/plume apply ../../../../../android/patches/plume-android.patch
-git -C lib/rt64/src/contrib/zstd apply ../../../../../android/patches/zstd-android.patch
-git -C lib/N64ModernRuntime apply ../../android/patches/n64modernruntime-android.patch
-git -C lib/RecompFrontend apply ../../android/patches/recompfrontend-android.patch
-cd android && ./gradlew assembleDebug -PHOST_FILE_TO_C="$PWD/../build-filetoc/file_to_c"
-```
-
 ## Credits and license
 
 This fork:
